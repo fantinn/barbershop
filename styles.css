@@ -92,10 +92,6 @@ body {
   user-select: none;
 }
 
-#gallery-carousel img {
-  pointer-events: none;
-}
-
 @media (max-width: 768px) {
   #gallery-carousel > div > div {
     flex: 0 0 calc(100% - 8px);

@@ -77,11 +77,11 @@ const carousel = document.getElementById("gallery-carousel");
 if (carousel) {
   let isAutoScrolling = true;
   let scrollPosition = 0;
+  let lastKnownScroll = 0;
   let autoPlayTimeout;
-  let isUserInteracting = false;
 
   const autoScroll = () => {
-    if (isAutoScrolling && !isUserInteracting) {
+    if (isAutoScrolling) {
       scrollPosition += 1;
       carousel.scrollLeft = scrollPosition;
 
@@ -96,25 +96,14 @@ if (carousel) {
   // Inicia o autoplay
   const autoPlayInterval = setInterval(autoScroll, 30);
 
-  // Touch: pausa qualquer movimento quando toca
-  carousel.addEventListener("touchstart", (e) => {
-    isUserInteracting = true;
-    isAutoScrolling = false;
-    clearTimeout(autoPlayTimeout);
-  }, { passive: true });
-
-  carousel.addEventListener("touchend", (e) => {
-    isUserInteracting = false;
-    autoPlayTimeout = setTimeout(() => {
-      isAutoScrolling = true;
-      scrollPosition = carousel.scrollLeft;
-    }, 2000);
-  }, { passive: true });
-
-  // Mouse events
+  // Pausa quando o usuário interage com o carrossel (apenas mouse)
   carousel.addEventListener("mousedown", () => {
     isAutoScrolling = false;
     clearTimeout(autoPlayTimeout);
+  });
+
+  carousel.addEventListener("mousemove", () => {
+    isAutoScrolling = false;
   });
 
   carousel.addEventListener("mouseup", () => {
@@ -128,4 +117,19 @@ if (carousel) {
   carousel.addEventListener("mouseleave", () => {
     isAutoScrolling = true;
   });
+
+  // Para touch: detecta mudança no scroll apenas
+  carousel.addEventListener("scroll", () => {
+    // Se o scroll mudou e não é da nossa ação de autoplay, pausa
+    if (Math.abs(carousel.scrollLeft - scrollPosition) > 2) {
+      isAutoScrolling = false;
+      clearTimeout(autoPlayTimeout);
+      lastKnownScroll = carousel.scrollLeft;
+      
+      autoPlayTimeout = setTimeout(() => {
+        isAutoScrolling = true;
+        scrollPosition = carousel.scrollLeft;
+      }, 2000);
+    }
+  }, false);
 }
