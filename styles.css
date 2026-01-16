@@ -88,9 +88,12 @@ body {
 
 #gallery-carousel {
   scroll-behavior: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
+  -webkit-overflow-scrolling: auto;
   user-select: none;
+}
+
+#gallery-carousel img {
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {

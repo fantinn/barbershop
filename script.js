@@ -77,11 +77,11 @@ const carousel = document.getElementById("gallery-carousel");
 if (carousel) {
   let isAutoScrolling = true;
   let scrollPosition = 0;
-  let lastScrollPosition = 0;
   let autoPlayTimeout;
+  let isUserInteracting = false;
 
   const autoScroll = () => {
-    if (isAutoScrolling) {
+    if (isAutoScrolling && !isUserInteracting) {
       scrollPosition += 1;
       carousel.scrollLeft = scrollPosition;
 
@@ -96,36 +96,28 @@ if (carousel) {
   // Inicia o autoplay
   const autoPlayInterval = setInterval(autoScroll, 30);
 
-  // Pausa quando o usuário interage com o carrossel
+  // Touch: pausa qualquer movimento quando toca
+  carousel.addEventListener("touchstart", (e) => {
+    isUserInteracting = true;
+    isAutoScrolling = false;
+    clearTimeout(autoPlayTimeout);
+  }, { passive: true });
+
+  carousel.addEventListener("touchend", (e) => {
+    isUserInteracting = false;
+    autoPlayTimeout = setTimeout(() => {
+      isAutoScrolling = true;
+      scrollPosition = carousel.scrollLeft;
+    }, 2000);
+  }, { passive: true });
+
+  // Mouse events
   carousel.addEventListener("mousedown", () => {
     isAutoScrolling = false;
-    lastScrollPosition = carousel.scrollLeft;
     clearTimeout(autoPlayTimeout);
-  });
-
-  carousel.addEventListener("mousemove", () => {
-    isAutoScrolling = false;
   });
 
   carousel.addEventListener("mouseup", () => {
-    // Apenas retoma se o scroll mudou (significando que foi arrastado)
-    if (carousel.scrollLeft !== lastScrollPosition) {
-      autoPlayTimeout = setTimeout(() => {
-        isAutoScrolling = true;
-        scrollPosition = carousel.scrollLeft;
-      }, 2000);
-    } else {
-      isAutoScrolling = true;
-    }
-  });
-
-  carousel.addEventListener("touchstart", () => {
-    isAutoScrolling = false;
-    lastScrollPosition = carousel.scrollLeft;
-    clearTimeout(autoPlayTimeout);
-  });
-
-  carousel.addEventListener("touchend", () => {
     autoPlayTimeout = setTimeout(() => {
       isAutoScrolling = true;
       scrollPosition = carousel.scrollLeft;
@@ -134,8 +126,6 @@ if (carousel) {
 
   // Retoma o autoplay quando sai do carrossel
   carousel.addEventListener("mouseleave", () => {
-    if (carousel.scrollLeft === lastScrollPosition) {
-      isAutoScrolling = true;
-    }
+    isAutoScrolling = true;
   });
 }
